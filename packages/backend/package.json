@@ -2,9 +2,19 @@
   "name": "marci-admin",
   "version": "0.0.1",
   "type": "module",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "license": "MIT",
+  "author": {
+    "name": "den59k"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/den59k/marci-admin.git"
+  },
   "scripts": {
     "dev": "bun --watch src/main.ts",
-    "build": "bunup src/main.ts"
+    "build": "bunup src/main.ts --define.__PRODUCTION__=true"
   },
   "dependencies": {
     "marci-orm": "*"

@@ -1,6 +1,7 @@
 import { type MarciApp, HTTPError } from "@den59k/marci";
 // import type { ViteDevServer } from "vite";
-import frontendIndex from '../../frontend/index.html'
+// import frontendIndex from '../../frontend/index.html'
+import { join, normalize } from "node:path"
 import { schema, unfoldSchema, type SchemaItem, type SchemaType } from "compact-json-schema";
 
 type AdminPanelPlugin<T extends any[]> = (app: AdminPanel, ...options: T) => void | Promise<void>
@@ -35,6 +36,8 @@ type PageEntry = {
   primaryKeyType?: SchemaItem,
   dataMapper: { map: (item: any) => any, key: string }[]
 }
+
+declare const __PRODUCTION__: boolean
 
 export const createAdminPanel = (): AdminPanelMarci => {
 
@@ -142,8 +145,30 @@ export const createAdminPanel = (): AdminPanelMarci => {
     
     const routesRaw = (app as any).routes
 
-    routesRaw["/admin/*"] = frontendIndex
-    routesRaw["/admin"] = frontendIndex
+    if (typeof __PRODUCTION__ !== "undefined" && __PRODUCTION__) {
+      const frontendDir = join(import.meta.dir, "frontend")
+  
+      // index.html читаем один раз и держим в памяти
+      const indexHtml = await Bun.file(join(frontendDir, "index.html")).text()
+      const serveIndex = () =>
+        new Response(indexHtml, { headers: { "Content-Type": "text/html; charset=utf-8" } })
+  
+      const ASSETS_PREFIX = "/admin/assets/"
+      routesRaw[ASSETS_PREFIX + "*"] = (req: Request) => {
+        const { pathname } = new URL(req.url)
+        const rel = normalize(pathname.slice(ASSETS_PREFIX.length))
+        if (rel.startsWith("..")) return new Response("Not found", { status: 404 }) // защита от path traversal
+        return new Response(Bun.file(join(frontendDir, rel))) // Content-Type Bun проставит по расширению
+      }
+  
+      // SPA-fallback
+      routesRaw["/admin"] = serveIndex
+      routesRaw["/admin/*"] = serveIndex
+    } else {
+      routesRaw["/admin/*"] = frontendIndex
+      routesRaw["/admin"] = frontendIndex
+    }
+
   }
   
   plugin.createPage = <T extends object>(options: CreatePageOptions) => {

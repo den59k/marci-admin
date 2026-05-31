@@ -1,7 +1,8 @@
 import { MarciApp, HTTPError } from "@den59k/marci";
 import { join } from 'node:path'
 import { Glob, type BunRequest } from "bun";
-import { createAdminPanel } from "../../backend/src/main";
+import { createAdminPanel } from 'marci-admin'
+// import { createAdminPanel } from "../../backend/src/main";
 import { db } from "./plugins/db";
 import { generateToken, verifyToken } from "./utils/generateSecretToken";
 
