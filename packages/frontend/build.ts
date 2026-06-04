@@ -51,7 +51,6 @@ const VENDORS = [
     name: "vue",
     entry: "./src/vendor/vue.ts",
     external: [], // сам Vue ничего не выносит
-    define: { ...define, ...vueFlags },
     plugins: undefined,
   },
   {
@@ -59,7 +58,6 @@ const VENDORS = [
     name: "vue-router",
     entry: "./src/vendor/vue-router.ts",
     external: ["vue"],
-    define: { ...define, ...vueFlags },
     plugins: undefined,
   },
   {
@@ -67,7 +65,6 @@ const VENDORS = [
     name: "sdk",
     entry: "./src/vendor/sdk.ts",
     external: ["vue", "vue-router"],
-    define,
     plugins, // SDK содержит UI-компоненты — плагины нужны
   },
 ] satisfies Array<{
@@ -75,7 +72,6 @@ const VENDORS = [
   name: string
   entry: string
   external: string[]
-  define: Record<string, string>
   plugins?: typeof plugins
 }>
 
@@ -87,9 +83,13 @@ for (const v of VENDORS) {
   await build(v.specifier, {
     entrypoints: [v.entry],
     outdir: `${OUT}/vendor`,
-    naming: { entry: "[name].js" },
+    naming: {
+      entry: "[name].js",
+      chunk: "[name]-[hash].js",
+      asset: "[name]-[hash].[ext]",
+    },
     external: v.external,
-    define: v.define,
+    define: { ...define, ...vueFlags },
     plugins: v.plugins,
   })
 }

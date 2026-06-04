@@ -18,9 +18,9 @@ export default (admin: AdminPanel, path: string) => admin.createPage({ title: "�
     return await db.users.findFirst({ where: { id } })
   })
   .table([
-    { title: "ID", field: "id" },
+    { title: "ID", field: "id", width: 50 },
     { title: "Имя", field: "name" },
-    { title: "Test", template: "{uppercase(id)} {lastName}" }
+    { title: "Test", template: "{id} - {name}" }
   ])
   .createForm(createSchema, async (data) => {
     await db.users.create(data)

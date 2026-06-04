@@ -63,7 +63,11 @@ adminPanel
   .data(async ({ take, skip }) => db.users.findMany({ take, skip }))
   .primaryKey("id", "number")
   .item(async (id) => db.users.findFirst({ where: { id } }))
-  .table({ id: true, name: true, email: true })
+  .table([
+    { title: "ID", field: "id", width: 50 },
+    { title: "Name", field: "name" },
+    { title: "Label", template: "{id} - {name}" },
+  ])
   .createForm(userSchema, async (data) => db.users.create(data))
   .updateForm(userSchema, async (id, data) => db.users.update({ where: { id }, data }))
   .onDelete(async (ids) => db.users.deleteMany({ where: { id: { in: ids } } }));
@@ -80,15 +84,28 @@ The admin panel is available at `http://localhost:3000/admin`.
 
 | Method | Description |
 |---|---|
-| `.data(fn)` | Fetch the list — receives `{ take, skip }`, returns `{ rows, count }` |
+| `.data(fn)` | Fetch the list — receives `{ take, skip }`, returns an array of rows |
 | `.primaryKey(field, type)` | Declare the identity field (`"number"` or `"string"`) |
 | `.item(fn)` | Fetch a single record by id |
-| `.table(columns)` | Configure which columns appear in the table view |
+| `.table(columns)` | Column definitions for the table view — see [Column types](#column-types) below |
 | `.createForm(schema, fn)` | Form schema + async handler for record creation |
 | `.updateForm(schema, fn)` | Form schema + async handler for record update |
 | `.onDelete(fn)` | Async handler for bulk delete — receives an array of ids |
+| `.component(path)` | Absolute path to a `.vue` file rendered as the page body; compiled on-demand and served to the frontend |
+| `.componentData(name, fn)` | Register a named GET endpoint the custom component can fetch; `fn` receives query params |
+| `.componentData(name, schema, fn)` | Same as above with a [`compact-json-schema`](https://github.com/den59k/compact-json-schema) for query param validation |
 
 Form schemas use [`compact-json-schema`](https://github.com/den59k/compact-json-schema) format.
+
+### Column types
+
+Pass an array of column descriptors to `.table()`. Each column must have a `title` and optionally a `width` (pixels or `"Nfr"` fraction).
+
+| Column kind | Required fields | Description |
+|---|---|---|
+| Field | `field` | Renders the value of `field` from the row object |
+| Template | `template` | String with `{field}` placeholders, e.g. `"{id} - {name}"` (powered by [`itomori`](https://github.com/den59k/itomori)) |
+| Action | `onClick` | Button column (icon or text label); only available after `.primaryKey()` |
 
 ---
 

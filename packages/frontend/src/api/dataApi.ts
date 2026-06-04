@@ -1,4 +1,5 @@
 import { request } from "./request";
+import type { TableColumn } from '../components/VTable.vue'
 
 type Page = {
   title: string,
@@ -7,7 +8,7 @@ type Page = {
 
 export type FullPage = Page & {
   primaryKey: string,
-  table: Record<string, any>
+  table: TableColumn<any>[]
   createForm: { schema: any }
   updateForm: { schema: any }
   component?: string,
